@@ -15,21 +15,28 @@ local GuidLookup = {
     LookupMap = {},
 }
 
+
 ---Retrieves a known resource based on Guid
 ---@param guid Guid
 ---@return ResourceGuidResource|ResourceResource|nil
 function GuidLookup:Lookup(guid)
-    if not self.Ready or not guid then return end
+    if not self.Ready then
+        GuidLookup._Initialize()
+    end
+    if not guid then return end
     local lookup = self.LookupMap[guid]
     if lookup then
         return Ext[lookup.Location].Get(guid, lookup.ResourceType)
     end
 end
+
 function GuidLookup._Initialize()
+    -- Note: some mods might edit these resources after initialization, but not worth the overhead to re-scan
+    if GuidLookup.Ready then return end
     ---@param rmt GuidResourceType
-    for _,rmt in ipairs(Ext.Enums.ExtResourceManagerType) do
+    for _, rmt in ipairs(Ext.Enums.ExtResourceManagerType) do
         if rmt == "Max" then break end
-        for _,guid in ipairs(Ext.StaticData.GetAll(rmt)) do
+        for _, guid in ipairs(Ext.StaticData.GetAll(rmt)) do
             if guid ~= NULLUUID then
                 GuidLookup.LookupMap[guid] = {
                     Location = "StaticData",
@@ -38,9 +45,9 @@ function GuidLookup._Initialize()
             end
         end
     end
-    for _,rbt in ipairs(Ext.Enums.ResourceBankType) do
+    for _, rbt in ipairs(Ext.Enums.ResourceBankType) do
         if rbt == "Sentinel" then break end
-        for _,guid in ipairs(Ext.Resource.GetAll(rbt)) do
+        for _, guid in ipairs(Ext.Resource.GetAll(rbt)) do
             if guid ~= NULLUUID then
                 GuidLookup.LookupMap[guid] = {
                     Location = "Resource",
@@ -51,6 +58,5 @@ function GuidLookup._Initialize()
     end
     GuidLookup.Ready = true
 end
-GuidLookup._Initialize()
 
 return GuidLookup
