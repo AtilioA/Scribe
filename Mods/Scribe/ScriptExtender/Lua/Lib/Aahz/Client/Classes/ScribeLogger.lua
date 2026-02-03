@@ -14,6 +14,7 @@ function ScribeLogger:Init()
     self:CreateWindow()
     self:InitializeLayout()
 end
+
 function ScribeLogger:CreateWindow()
     if self.Window ~= nil then return end -- only create once
     self.Window = Imgui.CreateCommonWindow("Scribe Log (WIP)", {
@@ -41,7 +42,7 @@ function ScribeLogger:CreateWindow()
             self.MainMenu.UserData.SubMenus[menu.Handle] = menu
         end,
         ActivateSubMenu = function(menu)
-            for _,v in pairs(self.MainMenu.UserData.SubMenus) do
+            for _, v in pairs(self.MainMenu.UserData.SubMenus) do
                 v.Visible = (v.Handle == menu.Handle)
             end
         end
@@ -58,14 +59,35 @@ function ScribeLogger:InitializeLayout()
     self.MainTabBar = self.Window:AddTabBar("Scribe_LoggerTabBar")
     -- self.MainTabBar.AutoSelectNewTabs = true
 
+    -- Create tabs but defer logger initialization until first activation
     self.TabECS = self.MainTabBar:AddTabItem("ECS")
-    self.LoggerECS = ImguiECSLogger:New{}
-    self.LoggerECS:CreateTab(self.TabECS, self.MainMenu)
+    self.TabECS.OnActivate = function()
+        if not self.LoggerECS then
+            self.LoggerECS = ImguiECSLogger:New {}
+            self.LoggerECS:CreateTab(self.TabECS, self.MainMenu)
+            self.MainMenu.UserData.ActivateSubMenu(self.LoggerECS.SettingsMenu)
+        else
+            -- If already initialized, just activate submenu
+            if self.LoggerECS.SettingsMenu then
+                self.MainMenu.UserData.ActivateSubMenu(self.LoggerECS.SettingsMenu)
+            end
+        end
+    end
 
     self.TabServerEvents = self.MainTabBar:AddTabItem("Server Events")
-    self.LoggerServerEvents = ImguiServerEventLogger:New{}
-    self.LoggerServerEvents:CreateTab(self.TabServerEvents, self.MainMenu)
-    self.MainMenu.UserData.ActivateSubMenu(self.LoggerECS.SettingsMenu)
+    self.TabServerEvents.OnActivate = function()
+        if not self.LoggerServerEvents then
+            self.LoggerServerEvents = ImguiServerEventLogger:New {}
+            self.LoggerServerEvents:CreateTab(self.TabServerEvents, self.MainMenu)
+            if self.LoggerServerEvents.SettingsMenu then
+                self.MainMenu.UserData.ActivateSubMenu(self.LoggerServerEvents.SettingsMenu)
+            end
+        else
+            if self.LoggerServerEvents.SettingsMenu then
+                self.MainMenu.UserData.ActivateSubMenu(self.LoggerServerEvents.SettingsMenu)
+            end
+        end
+    end
 
     self.Ready = true
 end
