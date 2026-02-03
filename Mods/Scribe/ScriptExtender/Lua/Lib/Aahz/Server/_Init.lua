@@ -9,9 +9,9 @@ Ext.Events.SessionLoaded:Subscribe(function()
     local annoyingHelperID = "783884b2-fbee-4376-9c18-6fd99d225ce6"
     local annoyingHelper = Ext.Entity.Get(annoyingHelperID)
     if annoyingHelper ~= nil then
-        annoyingHelper.StatusImmunities.PersonalStatusImmunities["BURNING"] = nil
-        annoyingHelper.StatusImmunities.PersonalStatusImmunities["BURNING_LAVA"] = nil
-        annoyingHelper.StatusImmunities.PersonalStatusImmunities["SG_Condition"] = nil
+        annoyingHelper.StatusImmunities.PersonalStatusImmunities["BURNING"] = { NULLUUID }
+        annoyingHelper.StatusImmunities.PersonalStatusImmunities["BURNING_LAVA"] = { NULLUUID }
+        annoyingHelper.StatusImmunities.PersonalStatusImmunities["SG_Condition"] = { NULLUUID }
         annoyingHelper:Replicate("StatusImmunities")
     end
 end)
